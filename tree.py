@@ -52,7 +52,7 @@ def counts_to_entropy(counts):
     entropy = 0.0
     # TODO: should convert a dictionary of counts into entropy
     return entropy
-    
+
 def get_entropy(data):
     counts = count_labels(data)
     entropy = counts_to_entropy(counts)
@@ -87,10 +87,11 @@ def find_best_split(data):
     best_threshold = None
     best_gain = 0
     # TODO: find the feature and threshold that maximize information gain.
+    # HERE!
     return (best_feature, best_threshold)
 
 def make_leaf(data):
-    tree = Tree()   
+    tree = Tree()
     counts = count_labels(data)
     prediction = {}
     for label in counts:
@@ -124,5 +125,3 @@ def print_tree(tree):
         print "Branch", tree.feature, tree.threshold
         print_tree(tree.left)
         print_tree(tree.right)
-
-
