@@ -69,7 +69,8 @@ def counts_to_entropy(counts):
 
     for k, v in counts.iteritems():
         prob = v / totalCount
-        entropy = entropy - (prob * log(prob, 2))
+        if prob != 0:
+            entropy = entropy - (prob * log(prob, 2))
     return entropy
 
 def get_entropy(data):
@@ -97,7 +98,8 @@ def find_best_threshold_fast(data, feature):
     best_gain = 0
     best_threshold = None
     # TODO: Write a more efficient method to find the best threshold.
-    sortedData = sorted(data.items(), key=lambda x: x[1][feature])
+    sortedData = sorted(data, key=lambda x: x.values[feature])
+    print "length " + str(len(sortedData))
     if len(sortedData) < 1:
         return
 
@@ -108,19 +110,36 @@ def find_best_threshold_fast(data, feature):
     countsRight = count_labels(right)
     rollingCountLeft.append(countsLeft)
     rollingCountRight.append(countsRight)
+
     for index in range(len(sortedData) - 1):
         ptLabel = sortedData[index].label
+        newCountsLeft = dict(countsLeft)
+        newCountsRight = dict(countsRight)
         if ptLabel in countsLeft:
-            countsLeft[ptLabel] = 1 + countsLeft.get(ptLabel)
+            newCountsLeft[ptLabel] = 1 + countsLeft.get(ptLabel)
         else:
-            countsLeft[ptLabel] = 1
-        countsRight[ptLabel] -= 1
-        rollingCountLeft.append(countsLeft)
-        rollingCountRight.append(countsRight)
+            newCountsLeft[ptLabel] = 1
+        newCountsRight[ptLabel] -= 1
+        countsLeft = newCountsLeft
+        countsRight = newCountsRight
+        rollingCountLeft.append(newCountsLeft)
+        rollingCountRight.append(newCountsRight)
 
     for index in range(len(rollingCountLeft)):
-        curr = counts_to_entropy(rollingCountLeft[index])
+        left = rollingCountLeft[index]
+        right = rollingCountRight[index]
+        curr = (counts_to_entropy(left)*getTotal(left) + counts_to_entropy(right)*getTotal(right))/len(data)
+        gain = entropy - curr
+        if gain > best_gain:
+            best_gain = gain
+            best_threshold = sortedData[index].values[feature]
     return (best_gain, best_threshold)
+
+def getTotal(rollingCount):
+    sum = 0
+    for v in rollingCount.itervalues():
+        sum += v
+    return sum
 
 def find_best_split(data):
     if len(data) < 2:
