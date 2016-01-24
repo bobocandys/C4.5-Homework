@@ -97,7 +97,29 @@ def find_best_threshold_fast(data, feature):
     best_gain = 0
     best_threshold = None
     # TODO: Write a more efficient method to find the best threshold.
-    
+    sortedData = sorted(data.items(), key=lambda x: x[1][feature])
+    if len(sortedData) < 1:
+        return
+
+    rollingCountLeft = []
+    rollingCountRight = []
+    left, right = split_data(sortedData, feature, sortedData[0])
+    countsLeft = count_labels(left)
+    countsRight = count_labels(right)
+    rollingCountLeft.append(countsLeft)
+    rollingCountRight.append(countsRight)
+    for index in range(len(sortedData) - 1):
+        ptLabel = sortedData[index].label
+        if ptLabel in countsLeft:
+            countsLeft[ptLabel] = 1 + countsLeft.get(ptLabel)
+        else:
+            countsLeft[ptLabel] = 1
+        countsRight[ptLabel] -= 1
+        rollingCountLeft.append(countsLeft)
+        rollingCountRight.append(countsRight)
+
+    for index in range(len(rollingCountLeft)):
+        curr = counts_to_entropy(rollingCountLeft[index])
     return (best_gain, best_threshold)
 
 def find_best_split(data):
