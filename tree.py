@@ -1,3 +1,4 @@
+from __future__ import division
 from math import log
 
 class Tree:
@@ -40,17 +41,35 @@ def split_data(data, feature, threshold):
     # TODO: split data into left and right by given feature.
     # left should contain points whose values are less than threshold
     # right should contain points with values greater than or equal to threshold
+    for point in data:
+        if  point.values[feature] < threshold:
+        	left.append(point)
+        else:
+        	right.append(point)
     return (left, right)
 
 def count_labels(data):
     counts = {}
     # TODO: counts should count the labels in data
     # e.g. counts = {'spam': 10, 'ham': 4}
+    for point in data:
+        if point.label in counts:
+            preCount = counts.get(point.label)
+            counts[point.label] = preCount + 1
+        else:
+            counts[point.label] = 1
     return counts
 
 def counts_to_entropy(counts):
     entropy = 0.0
     # TODO: should convert a dictionary of counts into entropy
+    totalCount = 0
+    for v in counts.itervalues():
+        totalCount += v
+
+    for k, v in counts.iteritems():
+        prob = v / totalCount
+        entropy = entropy - (prob * log(prob, 2))
     return entropy
 
 def get_entropy(data):
@@ -78,6 +97,7 @@ def find_best_threshold_fast(data, feature):
     best_gain = 0
     best_threshold = None
     # TODO: Write a more efficient method to find the best threshold.
+    
     return (best_gain, best_threshold)
 
 def find_best_split(data):
