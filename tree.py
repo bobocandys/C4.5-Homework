@@ -68,8 +68,8 @@ def counts_to_entropy(counts):
         totalCount += v
 
     for v in counts.itervalues():
-        prob = v / totalCount
-        if prob != 0:
+        if v != 0 and totalCount != 0:
+            prob = v / totalCount
             entropy = entropy - (prob * log(prob, 2))
     return entropy
 
@@ -99,15 +99,17 @@ def find_best_threshold_fast(data, feature):
     best_threshold = None
     # TODO: Write a more efficient method to find the best threshold.
     sortedData = sorted(data, key=lambda x: x.values[feature])
+
     rollingCountLeft = []
     rollingCountRight = []
-    #print str(sortedData[0])
-    left, right = split_data(sortedData, feature, sortedData[0].values[feature])
-    countsLeft = count_labels(left)
-    countsRight = count_labels(right)
+    countsRight = count_labels(sortedData)
+
+    countsLeft = {}
+    for k, v in countsRight.iteritems():
+        countsLeft[k] = 0
+
     rollingCountLeft.append(countsLeft)
     rollingCountRight.append(countsRight)
-    prevThreshold = None
 
     for index in range(len(sortedData) - 1):
         ptLabel = sortedData[index].label
@@ -115,9 +117,10 @@ def find_best_threshold_fast(data, feature):
         newCountsRight = dict(countsRight)
         curThreshold = sortedData[index].values[feature]
         nextThreshold = sortedData[index + 1].values[feature]
-        if nextThreshold != curThreshold:
+        if nextThreshold > curThreshold:
             if ptLabel in countsLeft:
-                newCountsLeft[ptLabel] = 1 + countsLeft.get(ptLabel)
+                preCount = countsLeft.get(ptLabel)
+                newCountsLeft[ptLabel] = 1 + preCount
             else:
                 newCountsLeft[ptLabel] = 1
             newCountsRight[ptLabel] -= 1
@@ -126,10 +129,10 @@ def find_best_threshold_fast(data, feature):
         rollingCountLeft.append(newCountsLeft)
         rollingCountRight.append(newCountsRight)
 
-    for index in range(len(rollingCountLeft)):
+    for index in range(len(sortedData)):
         leftCount = rollingCountLeft[index]
         rightCount = rollingCountRight[index]
-        curr = (counts_to_entropy(leftCount)*getTotal(leftCount) + counts_to_entropy(rightCount)*getTotal(rightCount))/len(data)
+        curr = (counts_to_entropy(leftCount)*getTotal(leftCount) + counts_to_entropy(rightCount)*getTotal(rightCount))/len(sortedData)
         gain = entropy - curr
         if gain > best_gain:
             best_gain = gain
@@ -137,10 +140,10 @@ def find_best_threshold_fast(data, feature):
     return (best_gain, best_threshold)
 
 def getTotal(rollingCount):
-    sum = 0
+    total = 0
     for v in rollingCount.itervalues():
-        sum += v
-    return sum
+        total += v
+    return total
 
 def find_best_split(data):
     if len(data) < 2:
@@ -150,9 +153,11 @@ def find_best_split(data):
     best_gain = 0
 
     # TODO: find the feature and threshold that maximize information gain.
-    print "size " + str(len(data[0].values))
+    #print "size " + str(len(data[0].values))
     for feature in range(len(data[0].values)):
         gain, threshold = find_best_threshold_fast(data, feature)
+        #print "gain " + str(gain)
+        #print "threshold" + str(threshold)
         if gain > best_gain:
             best_gain = gain
             best_feature = feature
@@ -170,6 +175,7 @@ def make_leaf(data):
 
 def c45(data, max_levels):
     if max_levels <= 0:
+        #print "000000000"
         return make_leaf(data)
     # TODO: Construct a decision tree with the data and return it.
     # Your algorithm should return a leaf if the maximum level depth is reached
@@ -177,11 +183,14 @@ def c45(data, max_levels):
     # choose an feature and threshold to split on and recurse on both partitions
     # of the data.
     if isAllSame(data):
+        #print "11111111"
         return make_leaf(data)
     else:
         feature, threshold = find_best_split(data)
         #print "picked feature " + str(feature)
-        if (feature is None) or (threshold is None):
+        #print "data size " + str(len(data))
+        if (feature == None) or (threshold == None):
+            #print "2222222"
             return make_leaf(data)
         else:
             left, right = split_data(data, feature, threshold)
@@ -189,8 +198,10 @@ def c45(data, max_levels):
             root.leaf = False
             root.feature = feature
             root.threshold = threshold
-            root.left = c45(left, max_levels - 1)
+            #print "left size " + str(len(left))
+            #print "right size " + str(len(right))
             root.right = c45(right, max_levels - 1)
+            root.left = c45(left, max_levels - 1)
         return root
 
 def isAllSame(data):
