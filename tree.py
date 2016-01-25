@@ -99,7 +99,6 @@ def find_best_threshold_fast(data, feature):
     best_threshold = None
     # TODO: Write a more efficient method to find the best threshold.
     sortedData = sorted(data, key=lambda x: x.values[feature])
-    print "length " + str(len(sortedData))
     if len(sortedData) < 1:
         return
 
@@ -147,8 +146,18 @@ def find_best_split(data):
     best_feature = None
     best_threshold = None
     best_gain = 0
+
     # TODO: find the feature and threshold that maximize information gain.
-    # HERE!
+    for feature in range(len(data[0].values)):
+        gain, threshold = find_best_threshold_fast(data, feature)
+        print "feature" + str(feature)
+        print "gain " + str(gain)
+        if gain > best_gain:
+            best_gain = gain
+            best_feature = feature
+            best_threshold = threshold
+
+    print "best fes thr" + str(best_feature) + " " + str(best_threshold)
     return (best_feature, best_threshold)
 
 def make_leaf(data):
