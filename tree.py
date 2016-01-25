@@ -101,7 +101,8 @@ def find_best_threshold_fast(data, feature):
     sortedData = sorted(data, key=lambda x: x.values[feature])
     rollingCountLeft = []
     rollingCountRight = []
-    left, right = split_data(sortedData, feature, sortedData[0])
+    #print str(sortedData[0])
+    left, right = split_data(sortedData, feature, sortedData[0].values[feature])
     countsLeft = count_labels(left)
     countsRight = count_labels(right)
     rollingCountLeft.append(countsLeft)
@@ -148,8 +149,8 @@ def find_best_split(data):
     best_threshold = None
     best_gain = 0
 
-    gain, threshold = find_best_threshold_fast(data, 0)
     # TODO: find the feature and threshold that maximize information gain.
+    print "size " + str(len(data[0].values))
     for feature in range(len(data[0].values)):
         gain, threshold = find_best_threshold_fast(data, feature)
         if gain > best_gain:
@@ -179,13 +180,17 @@ def c45(data, max_levels):
         return make_leaf(data)
     else:
         feature, threshold = find_best_split(data)
-        left, right = split_data(data, feature, threshold)
-        root = Tree()
-        root.leaf = False
-        root.feature = feature
-        root.threshold = threshold
-        root.left = c45(left, max_levels - 1)
-        root.right = c45(right, max_levels - 1)
+        #print "picked feature " + str(feature)
+        if (feature is None) or (threshold is None):
+            return make_leaf(data)
+        else:
+            left, right = split_data(data, feature, threshold)
+            root = Tree()
+            root.leaf = False
+            root.feature = feature
+            root.threshold = threshold
+            root.left = c45(left, max_levels - 1)
+            root.right = c45(right, max_levels - 1)
         return root
 
 def isAllSame(data):
@@ -198,6 +203,9 @@ def submission(train, test):
     # TODO: Once your tests pass, make your submission as good as you can!
     tree = c45(train, 4)
     predictions = []
+
+    print_tree(tree)
+
     for point in test:
         predictions.append(predict(tree, point))
     return predictions
