@@ -67,7 +67,7 @@ def counts_to_entropy(counts):
     for v in counts.itervalues():
         totalCount += v
 
-    for k, v in counts.iteritems():
+    for v in counts.itervalues():
         prob = v / totalCount
         if prob != 0:
             entropy = entropy - (prob * log(prob, 2))
@@ -99,9 +99,6 @@ def find_best_threshold_fast(data, feature):
     best_threshold = None
     # TODO: Write a more efficient method to find the best threshold.
     sortedData = sorted(data, key=lambda x: x.values[feature])
-    if len(sortedData) < 1:
-        return
-
     rollingCountLeft = []
     rollingCountRight = []
     left, right = split_data(sortedData, feature, sortedData[0])
@@ -109,25 +106,29 @@ def find_best_threshold_fast(data, feature):
     countsRight = count_labels(right)
     rollingCountLeft.append(countsLeft)
     rollingCountRight.append(countsRight)
+    prevThreshold = None
 
     for index in range(len(sortedData) - 1):
         ptLabel = sortedData[index].label
         newCountsLeft = dict(countsLeft)
         newCountsRight = dict(countsRight)
-        if ptLabel in countsLeft:
-            newCountsLeft[ptLabel] = 1 + countsLeft.get(ptLabel)
-        else:
-            newCountsLeft[ptLabel] = 1
-        newCountsRight[ptLabel] -= 1
+        curThreshold = sortedData[index].values[feature]
+        nextThreshold = sortedData[index + 1].values[feature]
+        if nextThreshold != curThreshold:
+            if ptLabel in countsLeft:
+                newCountsLeft[ptLabel] = 1 + countsLeft.get(ptLabel)
+            else:
+                newCountsLeft[ptLabel] = 1
+            newCountsRight[ptLabel] -= 1
         countsLeft = newCountsLeft
         countsRight = newCountsRight
         rollingCountLeft.append(newCountsLeft)
         rollingCountRight.append(newCountsRight)
 
     for index in range(len(rollingCountLeft)):
-        left = rollingCountLeft[index]
-        right = rollingCountRight[index]
-        curr = (counts_to_entropy(left)*getTotal(left) + counts_to_entropy(right)*getTotal(right))/len(data)
+        leftCount = rollingCountLeft[index]
+        rightCount = rollingCountRight[index]
+        curr = (counts_to_entropy(leftCount)*getTotal(leftCount) + counts_to_entropy(rightCount)*getTotal(rightCount))/len(data)
         gain = entropy - curr
         if gain > best_gain:
             best_gain = gain
@@ -147,17 +148,14 @@ def find_best_split(data):
     best_threshold = None
     best_gain = 0
 
+    gain, threshold = find_best_threshold_fast(data, 0)
     # TODO: find the feature and threshold that maximize information gain.
     for feature in range(len(data[0].values)):
         gain, threshold = find_best_threshold_fast(data, feature)
-        print "feature" + str(feature)
-        print "gain " + str(gain)
         if gain > best_gain:
             best_gain = gain
             best_feature = feature
             best_threshold = threshold
-
-    print "best fes thr" + str(best_feature) + " " + str(best_threshold)
     return (best_feature, best_threshold)
 
 def make_leaf(data):
