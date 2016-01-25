@@ -29,7 +29,7 @@ class TreeTest(unittest.TestCase):
         gain, thresh = find_best_threshold_fast(self.data, 1)
         self.assertAlmostEqual(gain, 0.321928094887)
         self.assertEqual(thresh, 38000)
-    
+
     def test_best_split(self):
         feature, thresh = find_best_split(self.data)
         self.assertEqual(feature, 1)
@@ -42,7 +42,7 @@ class TreeTest(unittest.TestCase):
         self.assertEqual(feature, 0)
         self.assertEqual(thresh, 43)
 
-    @unittest.skip("Comment out this line when ready.")
+    #@unittest.skip("Comment out this line when ready.")
     def testsubmission(self):
         train = get_spam_train_data()
         valid = get_spam_valid_data()
@@ -51,8 +51,6 @@ class TreeTest(unittest.TestCase):
         print
         print "Your current accuracy is:", acc
         self.assertGreater(acc, .75)
-        
+
 if __name__ == '__main__':
     unittest.main()
-
-

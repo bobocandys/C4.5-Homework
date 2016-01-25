@@ -175,7 +175,24 @@ def c45(data, max_levels):
     # or if there is no split that gains information, otherwise it should greedily
     # choose an feature and threshold to split on and recurse on both partitions
     # of the data.
-    return make_leaf(data)
+    if isAllSame(data):
+        return make_leaf(data)
+    else:
+        feature, threshold = find_best_split(data)
+        left, right = split_data(data, feature, threshold)
+        root = Tree()
+        root.leaf = False
+        root.feature = feature
+        root.threshold = threshold
+        root.left = c45(left, max_levels - 1)
+        root.right = c45(right, max_levels - 1)
+        return root
+
+def isAllSame(data):
+    for index in range(len(data) - 1):
+        if data[0].label != data[index + 1].label:
+            return False
+    return True
 
 def submission(train, test):
     # TODO: Once your tests pass, make your submission as good as you can!
