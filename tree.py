@@ -11,6 +11,7 @@ class Tree:
 
 def predict(tree, point):
     if tree.leaf:
+        #print str(tree.prediction)
         return tree.prediction
     i = tree.feature
     if (point.values[i] < tree.threshold):
@@ -118,11 +119,7 @@ def find_best_threshold_fast(data, feature):
         curThreshold = sortedData[index].values[feature]
         nextThreshold = sortedData[index + 1].values[feature]
         if nextThreshold > curThreshold:
-            if ptLabel in countsLeft:
-                preCount = countsLeft.get(ptLabel)
-                newCountsLeft[ptLabel] = 1 + preCount
-            else:
-                newCountsLeft[ptLabel] = 1
+            newCountsLeft[ptLabel] += 1
             newCountsRight[ptLabel] -= 1
         countsLeft = newCountsLeft
         countsRight = newCountsRight
@@ -183,14 +180,13 @@ def c45(data, max_levels):
     # choose an feature and threshold to split on and recurse on both partitions
     # of the data.
     if isAllSame(data):
-        #print "11111111"
         return make_leaf(data)
     else:
         feature, threshold = find_best_split(data)
-        #print "picked feature " + str(feature)
-        #print "data size " + str(len(data))
+        print "picked feature " + str(feature)
+        print "picked threshold " + str(threshold)
+        print "data size " + str(len(data))
         if (feature == None) or (threshold == None):
-            #print "2222222"
             return make_leaf(data)
         else:
             left, right = split_data(data, feature, threshold)
@@ -198,8 +194,8 @@ def c45(data, max_levels):
             root.leaf = False
             root.feature = feature
             root.threshold = threshold
-            #print "left size " + str(len(left))
-            #print "right size " + str(len(right))
+            print "left size " + str(len(left))
+            print "right size " + str(len(right))
             root.right = c45(right, max_levels - 1)
             root.left = c45(left, max_levels - 1)
         return root
