@@ -146,6 +146,7 @@ def find_best_split(data):
             best_gain = gain
             best_feature = feature
             best_threshold = threshold
+    print "feature, threshold, gain " + str(best_feature) + " " + str(best_threshold) + " " + str(best_gain)
     return (best_feature, best_threshold)
 
 def make_leaf(data):

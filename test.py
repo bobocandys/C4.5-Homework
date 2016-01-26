@@ -42,7 +42,12 @@ class TreeTest(unittest.TestCase):
         self.assertEqual(feature, 0)
         self.assertEqual(thresh, 43)
 
-    #@unittest.skip("Comment out this line when ready.")
+    def test_question_2(self):
+        train = self.data
+        tree = c45(train, 9)
+        print_tree(tree)
+
+    @unittest.skip("Comment out this line when ready.")
     def testsubmission(self):
         train = get_spam_train_data()
         valid = get_spam_valid_data()
