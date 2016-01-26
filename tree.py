@@ -11,7 +11,6 @@ class Tree:
 
 def predict(tree, point):
     if tree.leaf:
-        #print str(tree.prediction)
         return tree.prediction
     i = tree.feature
     if (point.values[i] < tree.threshold):
@@ -111,7 +110,6 @@ def find_best_threshold_fast(data, feature):
     best_threshold = sortedData[0].values[feature]
     index = 1
 
-    # threshold is at index
     while index < len(sortedData):
         prevValue = sortedData[index - 1].values[feature]
         curThreshold = sortedData[index].values[feature]
@@ -142,11 +140,8 @@ def find_best_split(data):
     best_gain = 0
 
     # TODO: find the feature and threshold that maximize information gain.
-    #print "size " + str(len(data[0].values))
     for feature in range(len(data[0].values)):
         gain, threshold = find_best_threshold_fast(data, feature)
-        #print "gain " + str(gain)
-        #print "threshold" + str(threshold)
         if gain > best_gain:
             best_gain = gain
             best_feature = feature
@@ -164,7 +159,6 @@ def make_leaf(data):
 
 def c45(data, max_levels):
     if max_levels <= 0:
-        #print "000000000"
         return make_leaf(data)
     # TODO: Construct a decision tree with the data and return it.
     # Your algorithm should return a leaf if the maximum level depth is reached
@@ -175,9 +169,6 @@ def c45(data, max_levels):
         return make_leaf(data)
     else:
         feature, threshold = find_best_split(data)
-        print "picked feature " + str(feature)
-        print "picked threshold " + str(threshold)
-        print "data size " + str(len(data))
         if (feature == None) or (threshold == None):
             return make_leaf(data)
         else:
@@ -186,8 +177,6 @@ def c45(data, max_levels):
             root.leaf = False
             root.feature = feature
             root.threshold = threshold
-            print "left size " + str(len(left))
-            print "right size " + str(len(right))
             root.right = c45(right, max_levels - 1)
             root.left = c45(left, max_levels - 1)
         return root
@@ -198,13 +187,14 @@ def isAllSame(data):
             return False
     return True
 
+# I increase the maximum depth to 9 and I got best accuracy.
+# Before 9, the tree is not big enough to predict really well.
+# When I get to 10, it starts to overfit my trainning data and
+# the accuracy decreases to 0.74.
 def submission(train, test):
     # TODO: Once your tests pass, make your submission as good as you can!
-    tree = c45(train, 4)
+    tree = c45(train, 9)
     predictions = []
-
-    print_tree(tree)
-
     for point in test:
         predictions.append(predict(tree, point))
     return predictions
